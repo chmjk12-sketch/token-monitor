@@ -14,48 +14,66 @@
   }
   h1 { font-size: 24px; margin-bottom: 8px; }
   .subtitle { color: #888; font-size: 14px; margin-bottom: 24px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
   .card {
     background: #fff; border-radius: 12px; padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     transition: transform 0.2s;
   }
   .card:hover { transform: translateY(-2px); }
-  .card-label { font-size: 13px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .card-value { font-size: 28px; font-weight: 700; color: #1a1a2e; }
-  .card-delta { font-size: 13px; color: #666; margin-top: 4px; }
+  .card-label { font-size: 12px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card-value { font-size: 26px; font-weight: 700; color: #1a1a2e; }
+  .card-delta { font-size: 12px; color: #666; margin-top: 4px; }
   .section { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .section h2 { font-size: 18px; margin-bottom: 16px; color: #1a1a2e; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-  th { font-weight: 600; color: #666; background: #fafbfc; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+  th { font-weight: 600; color: #666; background: #fafbfc; position: sticky; top: 0; }
   tr:hover { background: #f8f9fa; }
-  .rank { display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; font-size: 12px; font-weight: 700; color: #fff; }
+  .rank { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; font-size: 11px; font-weight: 700; color: #fff; }
   .rank-1 { background: #ff6b6b; }
   .rank-2 { background: #feca57; }
   .rank-3 { background: #48dbfb; }
   .rank-other { background: #c8d6e5; color: #576574; }
-  .chart-container { position: relative; height: 300px; }
+  .chart-container { position: relative; height: 320px; }
   canvas { width: 100% !important; height: 100% !important; }
   .empty { text-align: center; padding: 40px; color: #888; }
   .refresh-btn {
     position: fixed; top: 20px; right: 20px;
     background: #1a1a2e; color: #fff; border: none;
     padding: 10px 20px; border-radius: 8px; cursor: pointer;
-    font-size: 14px; transition: background 0.2s;
+    font-size: 14px; transition: background 0.2s; z-index: 100;
   }
   .refresh-btn:hover { background: #2d2d44; }
   .config-bar {
     background: #fff; border-radius: 12px; padding: 16px 20px;
     margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+    display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
   }
-  .config-bar label { font-size: 13px; color: #666; }
-  .config-bar input {
+  .config-bar label { font-size: 13px; color: #666; white-space: nowrap; }
+  .config-bar input, .config-bar select {
     border: 1px solid #ddd; border-radius: 6px; padding: 6px 10px;
-    font-size: 14px; width: 200px;
+    font-size: 14px;
   }
-  .config-bar input:focus { outline: none; border-color: #1a1a2e; }
+  .config-bar input:focus, .config-bar select:focus { outline: none; border-color: #1a1a2e; }
+  .model-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    background: #e3f2fd; color: #1565c0; margin-right: 4px;
+  }
+  .model-deepseek { background: #e8f5e9; color: #2e7d32; }
+  .model-openai { background: #fff3e0; color: #e65100; }
+  .model-anthropic { background: #f3e5f5; color: #6a1b9a; }
+  .status-success { color: #2e7d32; }
+  .status-error { color: #c62828; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab {
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    background: #f0f0f0; border: none; font-size: 14px;
+  }
+  .tab.active { background: #1a1a2e; color: #fff; }
+  .scroll-table { max-height: 400px; overflow-y: auto; }
+  .cost-cny { color: #e65100; font-weight: 600; }
+  .cost-usd { color: #1565c0; }
 </style>
 </head>
 <body>
@@ -67,13 +85,36 @@
 
 <div class="config-bar">
   <div>
-    <label>日志文件路径：</label>
-    <input type="text" id="logFileInput" value="api_logs.jsonl" onchange="updateLogPath()">
+    <label>日志文件：</label>
+    <input type="text" id="logFileInput" value="api_logs.jsonl" onchange="updateLogPath()" style="width:140px;">
   </div>
   <div>
-    <label>成本换算：$1 = </label>
-    <input type="number" id="costRateInput" value="1000000" step="100000" onchange="updateCostRate()" style="width:120px;">
-    <label>tokens</label>
+    <label>时间范围：</label>
+    <select id="timeRange" onchange="loadData()">
+      <option value="1">最近 1 小时</option>
+      <option value="6">最近 6 小时</option>
+      <option value="24" selected>最近 24 小时</option>
+      <option value="72">最近 3 天</option>
+      <option value="168">最近 7 天</option>
+      <option value="720">最近 30 天</option>
+      <option value="0">全部</option>
+    </select>
+  </div>
+  <div>
+    <label>Agent 筛选：</label>
+    <select id="agentFilter" onchange="loadData()">
+      <option value="">全部 Agent</option>
+    </select>
+  </div>
+  <div>
+    <label>模型筛选：</label>
+    <select id="modelFilter" onchange="loadData()">
+      <option value="">全部模型</option>
+    </select>
+  </div>
+  <div>
+    <label>USD/CNY 汇率：</label>
+    <input type="number" id="usdRate" value="7.2" step="0.1" onchange="loadData()" style="width:70px;">
   </div>
 </div>
 
@@ -90,99 +131,222 @@
     <div class="card-delta" id="tokens-delta">输入 0 + 输出 0</div>
   </div>
   <div class="card">
-    <div class="card-label">估算总成本</div>
-    <div class="card-value" id="total-cost">$0.0000</div>
-    <div class="card-delta">按当前换算率计算</div>
+    <div class="card-label">总成本 (CNY)</div>
+    <div class="card-value cost-cny" id="total-cost-cny">¥0.00</div>
+    <div class="card-delta" id="cost-delta-cny">按真实定价计算</div>
+  </div>
+  <div class="card">
+    <div class="card-label">总成本 (USD)</div>
+    <div class="card-value cost-usd" id="total-cost-usd">$0.00</div>
+    <div class="card-delta" id="cost-delta-usd">汇率: 7.2</div>
   </div>
   <div class="card">
     <div class="card-label">平均延迟</div>
     <div class="card-value" id="avg-latency">0.00s</div>
     <div class="card-delta">所有成功调用</div>
   </div>
+  <div class="card">
+    <div class="card-label">缓存命中率</div>
+    <div class="card-value" id="cache-hit-rate">0%</div>
+    <div class="card-delta">DeepSeek 缓存优化</div>
+  </div>
 </div>
 
 <!-- 排行 -->
 <div class="section">
-  <h2>排行 — Token 消耗 Top 5 Agent</h2>
-  <div id="ranking-container">
+  <h2>Agent 排行 — Token 消耗 Top 10</h2>
+  <div class="scroll-table">
     <table>
       <thead>
-        <tr><th>排名</th><th>Agent ID</th><th>总 Tokens</th><th>估算成本 ($)</th><th>调用次数</th><th>平均延迟 (s)</th></tr>
+        <tr>
+          <th>排名</th>
+          <th>Agent ID</th>
+          <th>总 Tokens</th>
+          <th>输入 Tokens</th>
+          <th>输出 Tokens</th>
+          <th>成本 (CNY)</th>
+          <th>成本 (USD)</th>
+          <th>调用次数</th>
+          <th>平均延迟</th>
+          <th>缓存命中</th>
+        </tr>
       </thead>
       <tbody id="ranking-body"></tbody>
     </table>
   </div>
 </div>
 
+<!-- 模型排行 -->
+<div class="section">
+  <h2>模型排行 — 按成本排序</h2>
+  <div class="scroll-table">
+    <table>
+      <thead>
+        <tr>
+          <th>模型</th>
+          <th>总 Tokens</th>
+          <th>输入 Tokens</th>
+          <th>输出 Tokens</th>
+          <th>成本 (CNY)</th>
+          <th>调用次数</th>
+          <th>占比</th>
+        </tr>
+      </thead>
+      <tbody id="model-ranking-body"></tbody>
+    </table>
+  </div>
+</div>
+
 <!-- 趋势 -->
 <div class="section">
-  <h2>趋势 — 过去 24 小时 Token 消耗</h2>
+  <div class="tabs">
+    <button class="tab active" onclick="setTrendMode('hourly')">每小时</button>
+    <button class="tab" onclick="setTrendMode('daily')">每日</button>
+  </div>
+  <h2 id="trend-title">趋势 — Token 消耗</h2>
   <div class="chart-container">
     <canvas id="trendChart"></canvas>
   </div>
 </div>
 
-<script>
-// 配置
-let LOG_FILE = 'api_logs.jsonl';
-let COST_PER_DOLLAR = 1000000;
+<!-- 最近调用记录 -->
+<div class="section">
+  <h2>最近 50 条调用记录</h2>
+  <div class="scroll-table">
+    <table>
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>Agent</th>
+          <th>模型</th>
+          <th>输入</th>
+          <th>输出</th>
+          <th>总 Tokens</th>
+          <th>成本</th>
+          <th>延迟</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody id="recent-body"></tbody>
+    </table>
+  </div>
+</div>
 
-// 更新配置
+<script>
+let LOG_FILE = 'api_logs.jsonl';
+let USD_TO_CNY = 7.2;
+let TREND_MODE = 'hourly';
+let ALL_RECORDS = [];
+
 function updateLogPath() {
   LOG_FILE = document.getElementById('logFileInput').value;
   document.getElementById('log-path').textContent = LOG_FILE;
   loadData();
 }
-function updateCostRate() {
-  COST_PER_DOLLAR = parseFloat(document.getElementById('costRateInput').value) || 1000000;
-  loadData();
+
+function setTrendMode(mode) {
+  TREND_MODE = mode;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('trend-title').textContent = mode === 'hourly' ? '趋势 — 每小时 Token 消耗' : '趋势 — 每日 Token 消耗';
+  renderTrend(ALL_RECORDS);
 }
 
-// 加载 JSONL 数据
 async function loadData() {
   try {
     const response = await fetch(LOG_FILE + '?t=' + Date.now());
     if (!response.ok) {
-      showEmpty('暂无日志数据。请先通过 ai_client.py 发起 AI 调用以生成日志。');
+      showEmpty('暂无日志数据');
       return;
     }
     const text = await response.text();
     const lines = text.trim().split('\n').filter(l => l.trim());
-    const records = lines.map(line => {
+    ALL_RECORDS = lines.map(line => {
       try { return JSON.parse(line); } catch(e) { return null; }
     }).filter(r => r !== null);
 
-    if (records.length === 0) {
-      showEmpty('暂无日志数据。请先通过 ai_client.py 发起 AI 调用以生成日志。');
+    if (ALL_RECORDS.length === 0) {
+      showEmpty('暂无日志数据');
       return;
     }
 
-    document.getElementById('total-records').textContent = records.length;
-    renderOverview(records);
-    renderRanking(records);
-    renderTrend(records);
+    // 更新时间筛选选项
+    updateFilterOptions(ALL_RECORDS);
+
+    // 应用筛选
+    const filtered = applyFilters(ALL_RECORDS);
+
+    document.getElementById('total-records').textContent = filtered.length;
+    renderOverview(filtered);
+    renderRanking(filtered);
+    renderModelRanking(filtered);
+    renderTrend(filtered);
+    renderRecent(filtered);
   } catch (e) {
-    showEmpty('暂无日志数据。请先通过 ai_client.py 发起 AI 调用以生成日志。');
+    showEmpty('加载失败: ' + e.message);
   }
+}
+
+function applyFilters(records) {
+  const timeRange = parseInt(document.getElementById('timeRange').value);
+  const agentFilter = document.getElementById('agentFilter').value;
+  const modelFilter = document.getElementById('modelFilter').value;
+  USD_TO_CNY = parseFloat(document.getElementById('usdRate').value) || 7.2;
+
+  let filtered = records;
+
+  // 时间筛选
+  if (timeRange > 0) {
+    const cutoff = Date.now() / 1000 - timeRange * 3600;
+    filtered = filtered.filter(r => (r.timestamp || 0) >= cutoff);
+  }
+
+  // Agent 筛选
+  if (agentFilter) {
+    filtered = filtered.filter(r => r.agent_id === agentFilter);
+  }
+
+  // 模型筛选
+  if (modelFilter) {
+    filtered = filtered.filter(r => r.model === modelFilter);
+  }
+
+  return filtered;
+}
+
+function updateFilterOptions(records) {
+  const agentSelect = document.getElementById('agentFilter');
+  const modelSelect = document.getElementById('modelFilter');
+
+  const currentAgent = agentSelect.value;
+  const currentModel = modelSelect.value;
+
+  const agents = [...new Set(records.map(r => r.agent_id).filter(Boolean))].sort();
+  const models = [...new Set(records.map(r => r.model).filter(Boolean))].sort();
+
+  agentSelect.innerHTML = '<option value="">全部 Agent</option>' +
+    agents.map(a => '<option value="' + a + '"' + (a === currentAgent ? ' selected' : '') + '>' + a + '</option>').join('');
+
+  modelSelect.innerHTML = '<option value="">全部模型</option>' +
+    models.map(m => '<option value="' + m + '"' + (m === currentModel ? ' selected' : '') + '>' + m + '</option>').join('');
 }
 
 function showEmpty(msg) {
   document.getElementById('total-records').textContent = '0';
-  document.getElementById('ranking-body').innerHTML = '<tr><td colspan="6" class="empty">' + msg + '</td></tr>';
-  const canvas = document.getElementById('trendChart');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = '14px sans-serif';
-  ctx.fillStyle = '#888';
-  ctx.textAlign = 'center';
-  ctx.fillText(msg, canvas.width / 2, canvas.height / 2);
+  ['total-calls', 'total-tokens', 'total-cost-cny', 'total-cost-usd', 'avg-latency', 'cache-hit-rate'].forEach(id => {
+    document.getElementById(id).textContent = id.includes('cost') ? (id.includes('cny') ? '¥0.00' : '$0.00') : '0';
+  });
+  document.getElementById('ranking-body').innerHTML = '<tr><td colspan="10" class="empty">' + msg + '</td></tr>';
+  document.getElementById('model-ranking-body').innerHTML = '<tr><td colspan="7" class="empty">' + msg + '</td></tr>';
+  document.getElementById('recent-body').innerHTML = '<tr><td colspan="9" class="empty">' + msg + '</td></tr>';
 }
 
 function renderOverview(records) {
   const totalTokens = records.reduce((s, r) => s + (r.total_tokens || 0), 0);
   const promptTokens = records.reduce((s, r) => s + (r.prompt_tokens || 0), 0);
   const completionTokens = records.reduce((s, r) => s + (r.completion_tokens || 0), 0);
-  const totalCost = totalTokens / COST_PER_DOLLAR;
+  const totalCostCNY = records.reduce((s, r) => s + (r.cost_cny || 0), 0);
+  const totalCostUSD = records.reduce((s, r) => s + (r.cost_usd || 0), 0);
   const totalCalls = records.length;
   const successCalls = records.filter(r => r.status === 'success').length;
   const errorCalls = records.filter(r => r.status === 'error').length;
@@ -191,12 +355,22 @@ function renderOverview(records) {
     ? successRecords.reduce((s, r) => s + (r.latency_seconds || 0), 0) / successRecords.length
     : 0;
 
+  // 缓存命中率
+  const cacheHitTokens = records.reduce((s, r) => s + (r.cache_hit_tokens || 0), 0);
+  const cacheMissTokens = records.reduce((s, r) => s + (r.cache_miss_tokens || 0), 0);
+  const cacheTotal = cacheHitTokens + cacheMissTokens;
+  const cacheRate = cacheTotal > 0 ? (cacheHitTokens / cacheTotal * 100).toFixed(1) : 0;
+
   document.getElementById('total-calls').textContent = totalCalls.toLocaleString();
   document.getElementById('calls-delta').textContent = '成功 ' + successCalls.toLocaleString() + ' / 失败 ' + errorCalls.toLocaleString();
   document.getElementById('total-tokens').textContent = totalTokens.toLocaleString();
   document.getElementById('tokens-delta').textContent = '输入 ' + promptTokens.toLocaleString() + ' + 输出 ' + completionTokens.toLocaleString();
-  document.getElementById('total-cost').textContent = '$' + totalCost.toFixed(4);
+  document.getElementById('total-cost-cny').textContent = '¥' + totalCostCNY.toFixed(2);
+  document.getElementById('cost-delta-cny').textContent = '按真实定价计算';
+  document.getElementById('total-cost-usd').textContent = '$' + totalCostUSD.toFixed(2);
+  document.getElementById('cost-delta-usd').textContent = '汇率: ' + USD_TO_CNY;
   document.getElementById('avg-latency').textContent = avgLatency.toFixed(2) + 's';
+  document.getElementById('cache-hit-rate').textContent = cacheRate + '%';
 }
 
 function renderRanking(records) {
@@ -204,72 +378,145 @@ function renderRanking(records) {
   records.forEach(r => {
     const id = r.agent_id || 'unknown';
     if (!agentMap[id]) {
-      agentMap[id] = { agent_id: id, total_tokens: 0, total_cost: 0, call_count: 0, total_latency: 0, latency_count: 0 };
+      agentMap[id] = { agent_id: id, total_tokens: 0, prompt_tokens: 0, completion_tokens: 0, cost_cny: 0, cost_usd: 0, call_count: 0, total_latency: 0, latency_count: 0, cache_hit: 0, cache_miss: 0 };
     }
-    agentMap[id].total_tokens += r.total_tokens || 0;
-    agentMap[id].total_cost += (r.total_tokens || 0) / COST_PER_DOLLAR;
-    agentMap[id].call_count += 1;
+    const a = agentMap[id];
+    a.total_tokens += r.total_tokens || 0;
+    a.prompt_tokens += r.prompt_tokens || 0;
+    a.completion_tokens += r.completion_tokens || 0;
+    a.cost_cny += r.cost_cny || 0;
+    a.cost_usd += r.cost_usd || 0;
+    a.call_count += 1;
+    a.cache_hit += r.cache_hit_tokens || 0;
+    a.cache_miss += r.cache_miss_tokens || 0;
     if (r.latency_seconds && r.status === 'success') {
-      agentMap[id].total_latency += r.latency_seconds;
-      agentMap[id].latency_count += 1;
+      a.total_latency += r.latency_seconds;
+      a.latency_count += 1;
     }
   });
 
-  const agents = Object.values(agentMap).sort((a, b) => b.total_tokens - a.total_tokens).slice(0, 5);
+  const agents = Object.values(agentMap).sort((a, b) => b.total_tokens - a.total_tokens).slice(0, 10);
 
   const tbody = document.getElementById('ranking-body');
   tbody.innerHTML = agents.map((a, i) => {
     const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
     const avgLatency = a.latency_count > 0 ? (a.total_latency / a.latency_count).toFixed(2) : '-';
+    const cacheTotal = a.cache_hit + a.cache_miss;
+    const cacheRate = cacheTotal > 0 ? (a.cache_hit / cacheTotal * 100).toFixed(1) + '%' : '-';
     return '<tr>' +
       '<td><span class="rank ' + rankClass + '">' + (i + 1) + '</span></td>' +
       '<td><code>' + escapeHtml(a.agent_id) + '</code></td>' +
       '<td>' + a.total_tokens.toLocaleString() + '</td>' +
-      '<td>$' + a.total_cost.toFixed(4) + '</td>' +
+      '<td>' + a.prompt_tokens.toLocaleString() + '</td>' +
+      '<td>' + a.completion_tokens.toLocaleString() + '</td>' +
+      '<td class="cost-cny">¥' + a.cost_cny.toFixed(2) + '</td>' +
+      '<td class="cost-usd">$' + a.cost_usd.toFixed(2) + '</td>' +
       '<td>' + a.call_count.toLocaleString() + '</td>' +
-      '<td>' + avgLatency + '</td>' +
+      '<td>' + avgLatency + 's</td>' +
+      '<td>' + cacheRate + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderModelRanking(records) {
+  const modelMap = {};
+  const totalCost = records.reduce((s, r) => s + (r.cost_cny || 0), 0);
+
+  records.forEach(r => {
+    const m = r.model || 'unknown';
+    if (!modelMap[m]) {
+      modelMap[m] = { model: m, total_tokens: 0, prompt_tokens: 0, completion_tokens: 0, cost_cny: 0, call_count: 0 };
+    }
+    const item = modelMap[m];
+    item.total_tokens += r.total_tokens || 0;
+    item.prompt_tokens += r.prompt_tokens || 0;
+    item.completion_tokens += r.completion_tokens || 0;
+    item.cost_cny += r.cost_cny || 0;
+    item.call_count += 1;
+  });
+
+  const models = Object.values(modelMap).sort((a, b) => b.cost_cny - a.cost_cny);
+
+  const tbody = document.getElementById('model-ranking-body');
+  tbody.innerHTML = models.map(m => {
+    const modelClass = m.model.includes('deepseek') ? 'model-deepseek' : m.model.includes('openai') || m.model.includes('gpt') ? 'model-openai' : 'model-anthropic';
+    const pct = totalCost > 0 ? (m.cost_cny / totalCost * 100).toFixed(1) + '%' : '0%';
+    return '<tr>' +
+      '<td><span class="model-tag ' + modelClass + '">' + escapeHtml(m.model) + '</span></td>' +
+      '<td>' + m.total_tokens.toLocaleString() + '</td>' +
+      '<td>' + m.prompt_tokens.toLocaleString() + '</td>' +
+      '<td>' + m.completion_tokens.toLocaleString() + '</td>' +
+      '<td class="cost-cny">¥' + m.cost_cny.toFixed(2) + '</td>' +
+      '<td>' + m.call_count.toLocaleString() + '</td>' +
+      '<td>' + pct + '</td>' +
     '</tr>';
   }).join('');
 }
 
 function renderTrend(records) {
   const now = Date.now() / 1000;
-  const hours24Ago = now - 24 * 3600;
-  const recent = records.filter(r => r.timestamp >= hours24Ago);
+  const canvas = document.getElementById('trendChart');
+  const ctx = canvas.getContext('2d');
 
-  if (recent.length === 0) {
-    const canvas = document.getElementById('trendChart');
-    const ctx = canvas.getContext('2d');
+  if (records.length === 0) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = '14px sans-serif';
     ctx.fillStyle = '#888';
     ctx.textAlign = 'center';
-    ctx.fillText('过去 24 小时内暂无调用记录', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('暂无数据', canvas.width / 2, canvas.height / 2);
     return;
   }
 
-  // 按小时聚合
+  // 按时间聚合
   const hourly = {};
-  for (let i = 0; i < 24; i++) {
-    const h = Math.floor(now / 3600) - 23 + i;
-    hourly[h] = { hour: h, prompt: 0, completion: 0, total: 0 };
-  }
-  recent.forEach(r => {
-    const h = Math.floor(r.timestamp / 3600);
-    if (hourly[h]) {
-      hourly[h].prompt += r.prompt_tokens || 0;
-      hourly[h].completion += r.completion_tokens || 0;
-      hourly[h].total += r.total_tokens || 0;
+  if (TREND_MODE === 'hourly') {
+    const hours = 24;
+    for (let i = 0; i < hours; i++) {
+      const h = Math.floor(now / 3600) - hours + 1 + i;
+      hourly[h] = { label: formatHour(h), prompt: 0, completion: 0, total: 0 };
     }
-  });
+    records.forEach(r => {
+      const h = Math.floor((r.timestamp || 0) / 3600);
+      if (hourly[h]) {
+        hourly[h].prompt += r.prompt_tokens || 0;
+        hourly[h].completion += r.completion_tokens || 0;
+        hourly[h].total += r.total_tokens || 0;
+      }
+    });
+  } else {
+    // 按天聚合（最近 30 天）
+    const days = 30;
+    for (let i = 0; i < days; i++) {
+      const d = Math.floor(now / 86400) - days + 1 + i;
+      hourly[d] = { label: formatDay(d), prompt: 0, completion: 0, total: 0 };
+    }
+    records.forEach(r => {
+      const d = Math.floor((r.timestamp || 0) / 86400);
+      if (hourly[d]) {
+        hourly[d].prompt += r.prompt_tokens || 0;
+        hourly[d].completion += r.completion_tokens || 0;
+        hourly[d].total += r.total_tokens || 0;
+      }
+    });
+  }
 
-  const data = Object.values(hourly).sort((a, b) => a.hour - b.hour);
-  const labels = data.map(d => {
-    const date = new Date(d.hour * 3600 * 1000);
-    return (date.getMonth() + 1) + '/' + date.getDate() + ' ' + String(date.getHours()).padStart(2, '0') + ':00';
+  const data = Object.values(hourly).sort((a, b) => {
+    // 按 label 中的时间排序
+    return 0;
   });
+  const labels = data.map(d => d.label);
 
   drawChart(labels, data.map(d => d.prompt), data.map(d => d.completion), data.map(d => d.total));
+}
+
+function formatHour(h) {
+  const date = new Date(h * 3600 * 1000);
+  return (date.getMonth() + 1) + '/' + date.getDate() + ' ' + String(date.getHours()).padStart(2, '0') + ':00';
+}
+
+function formatDay(d) {
+  const date = new Date(d * 86400 * 1000);
+  return (date.getMonth() + 1) + '/' + date.getDate();
 }
 
 function drawChart(labels, promptData, completionData, totalData) {
@@ -307,24 +554,24 @@ function drawChart(labels, promptData, completionData, totalData) {
     ctx.fillText(Math.round(maxVal * (1 - i / 5)).toLocaleString(), padding.left - 8, y + 4);
   }
 
-  // X轴标签（每3小时显示一个）
+  // X轴标签
   ctx.fillStyle = '#888';
   ctx.font = '11px sans-serif';
   ctx.textAlign = 'center';
+  const step = Math.ceil(n / 8);
   labels.forEach((label, i) => {
-    if (i % 3 === 0 || i === n - 1) {
-      const x = padding.left + (i / (n - 1)) * chartW;
+    if (i % step === 0 || i === n - 1) {
+      const x = padding.left + (i / (n - 1 || 1)) * chartW;
       ctx.fillText(label, x, h - padding.bottom + 18);
     }
   });
 
-  // 绘制折线
   function drawLine(data, color, fill) {
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     data.forEach((val, i) => {
-      const x = padding.left + (i / (n - 1)) * chartW;
+      const x = padding.left + (i / (n - 1 || 1)) * chartW;
       const y = padding.top + chartH * (1 - val / maxVal);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -336,7 +583,7 @@ function drawChart(labels, promptData, completionData, totalData) {
       ctx.beginPath();
       ctx.moveTo(padding.left, padding.top + chartH);
       data.forEach((val, i) => {
-        const x = padding.left + (i / (n - 1)) * chartW;
+        const x = padding.left + (i / (n - 1 || 1)) * chartW;
         const y = padding.top + chartH * (1 - val / maxVal);
         ctx.lineTo(x, y);
       });
@@ -369,9 +616,31 @@ function drawChart(labels, promptData, completionData, totalData) {
   });
 }
 
+function renderRecent(records) {
+  const recent = records.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 50);
+
+  const tbody = document.getElementById('recent-body');
+  tbody.innerHTML = recent.map(r => {
+    const date = r.datetime ? r.datetime.split('T').join(' ').slice(0, 19) : new Date((r.timestamp || 0) * 1000).toLocaleString('zh-CN');
+    const modelClass = (r.model || '').includes('deepseek') ? 'model-deepseek' : (r.model || '').includes('openai') || (r.model || '').includes('gpt') ? 'model-openai' : 'model-anthropic';
+    const statusClass = r.status === 'success' ? 'status-success' : 'status-error';
+    return '<tr>' +
+      '<td>' + date + '</td>' +
+      '<td><code>' + escapeHtml(r.agent_id || 'unknown') + '</code></td>' +
+      '<td><span class="model-tag ' + modelClass + '">' + escapeHtml((r.model || '').split('/').pop()) + '</span></td>' +
+      '<td>' + (r.prompt_tokens || 0).toLocaleString() + '</td>' +
+      '<td>' + (r.completion_tokens || 0).toLocaleString() + '</td>' +
+      '<td>' + (r.total_tokens || 0).toLocaleString() + '</td>' +
+      '<td class="cost-cny">¥' + ((r.cost_cny || 0)).toFixed(4) + '</td>' +
+      '<td>' + (r.latency_seconds || 0).toFixed(2) + 's</td>' +
+      '<td class="' + statusClass + '">' + (r.status || 'unknown') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
 function escapeHtml(text) {
   const div = document.createElement('div');
-  div.textContent = text;
+  div.textContent = text || '';
   return div.innerHTML;
 }
 
